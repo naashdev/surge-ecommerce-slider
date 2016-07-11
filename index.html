@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Surge Slider</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="src/css/example.css" media="screen" title="no title" charset="utf-8">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+        <script src="src/js/surgeSlider.js"></script>
+        <script type="text/javascript">
+            ($(function() {
+                $('.slider').surgeSlider({
+                    thumb: '.slider-thmbs',
+                    thumb_show: 4,
+                    thumb_gutter: 8,
+                    pager: '.pager',
+                    magnifier: true
+                });
+                $('.slide-next').on('click', function(e){
+                    e.preventDefault();
+                    $('.slider').trigger('surge-slider-next');
+                });
+                $('.slide-prev').on('click', function(e){
+                    e.preventDefault();
+                    $('.slider').trigger('surge-slider-prev');
+                });
+            }));
+        </script>
+    </head>
+    <body>
+        <div class="title">
+            <div class="container">
+                <h1>Surge Slider</h1>
+                <p>
+                    Built to do one thing well, ecommerce single product galleries!
+                </p>
+            </div>
+        </div>
+        <div class="product">
+            <div class="my-slider">
+                <ul class="slider">
+                    <li>
+                        <a href="#">
+                            <img src="img/01.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/02.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/03.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/01.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/02.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/03.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/01.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/02.jpg" alt="" />
+                        </a>
+                    </li>
+                </ul>
+                <nav class="pager"></nav>
+                <ul class="slider-thmbs">
+                    <li>
+                        <a href="#">
+                            <img src="img/01.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/02.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/03.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/01.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/02.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/03.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/01.jpg" alt="" />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <img src="img/02.jpg" alt="" />
+                        </a>
+                    </li>
+
+                </ul>
+                <a class="slide-prev" href="#">Prev</a>
+                <a class="slide-next" href="#">Next</a>
+            </div>
+        </div>
+
+    </body>
+</html>
