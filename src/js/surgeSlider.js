@@ -296,22 +296,6 @@
         },
 
         /* --------------------------------
-         | Get Image Size
-         * ------------------------------*/
-        get_image_size: function(img, callback) {
-             var $img = $(img);
-
-             var wait = setInterval(function() {
-                 var w = $img[0].naturalWidth,
-                     h = $img[0].naturalHeight;
-                 if (w && h) {
-                     clearInterval(wait);
-                     callback.apply(this, [w, h]);
-                 }
-             }, 30);
-        },
-
-        /* --------------------------------
          | Bind Events
          * ------------------------------*/
         bind: function() {
@@ -369,6 +353,7 @@
         pager_template: '<a href="#" class="pager"></a>',
         pager_class: 'pager',
         active_class: 'active',
+        preload: false
     };
 
 }(jQuery, window, document));
