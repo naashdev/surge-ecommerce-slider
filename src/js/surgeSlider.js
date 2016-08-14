@@ -206,7 +206,6 @@
 
             // Set dynamic width & height
             self.set_width(_self, is_thumbs);
-            self.set_height(_self, is_thumbs);
 
             // Setup faux elements if preload on
             if (preload) {
@@ -236,7 +235,7 @@
                         // Set height of viewport on first image load
                         load_count++;
                         if (load_count == 1) {
-                            _self.elems.$view.css({'height': $image.height() });
+                            _self.elems.$view.css({'height': _self.elems.$items.height() });
                         }
 
                         // Remove traces of faux element
