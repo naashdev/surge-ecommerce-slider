@@ -20,9 +20,9 @@
             self.id = 'surge_slider_' + (Math.random().toString(16).substring(2));
             self.options = $.extend($.fn.surgeSlider.options, options);
 
-            lazyLoad = self.options.lazy_load && $.fn.imagesLoaded;
+            preload = self.options.preload && $.fn.imagesLoaded;
             transitionsSupported = ('transition' in document.documentElement.style) || ('WebkitTransition' in document.documentElement.style);
-            
+
             // Core CSS
             slider_css = {
                 'width': '0%',
@@ -88,7 +88,7 @@
             _self.elems.$wrap.attr('data-slider-id', self.id);
 
             $.each(_self.elems.$items, function(i){
-                if (lazyLoad) $(this).find('img').css({'visibility': 'hidden'});
+                if (preload) $(this).find('img').css({'visibility': 'hidden'});
                 $(this).attr('data-slide', i + 1);
             });
 
@@ -208,8 +208,8 @@
             self.set_width(_self, is_thumbs);
             self.set_height(_self, is_thumbs);
 
-            // Setup faux elements if lazyLoad set
-            if (lazyLoad) {
+            // Setup faux elements if preload on
+            if (preload) {
 
                 if (is_thumbs) {
                     var faux_thumbs = self.options.thumb_show;
