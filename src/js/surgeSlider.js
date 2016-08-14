@@ -1,6 +1,6 @@
 /*!
  * Surge Slider;
- * version: 1.0.0
+ * version: 1.1.0
  * http://naashdev.net
  * Copyright (c) 2016 N. Talbot; Dual licensed: MIT/GPL
  */
@@ -20,12 +20,16 @@
             self.id = 'surge_slider_' + (Math.random().toString(16).substring(2));
             self.options = $.extend($.fn.surgeSlider.options, options);
 
+            preload = self.options.preload && $.fn.imagesLoaded;
+            transitionsSupported = ('transition' in document.documentElement.style) || ('WebkitTransition' in document.documentElement.style);
+
             // Core CSS
             slider_css = {
-                'width': '715%',
+                'width': '0%',
                 'position': 'relative',
                 'margin': '0',
                 'padding': '0',
+                'visibility': 'visible',
                 'transition-timing-function': self.options.animation_function,
                 'transition-duration': self.options.animation_timing + 's',
                 'transform': 'translate3d(0px, 0px, 0px)'
@@ -57,7 +61,6 @@
             // Bind Events
             self.bind();
 
-
         },
 
         /* --------------------------------
@@ -82,14 +85,15 @@
                 $items: _self.$el.children(),
             };
 
-            if (!is_thumbs) _self.elems.$wrap.attr('data-slider-id', self.id);
+            _self.elems.$wrap.attr('data-slider-id', self.id);
 
             $.each(_self.elems.$items, function(i){
+                if (preload) $(this).find('img').css({'visibility': 'hidden'});
                 $(this).attr('data-slide', i + 1);
             });
 
-            // Set css
             self.set_css(_self, is_thumbs);
+            _self.elems.$items.first().addClass(self.options.active_class);
 
         },
 
@@ -104,7 +108,7 @@
             $.each(self.main.elems.$items, function(i) {
                 var html = $(self.options.pager_template);
                 self.$pager.append(html);
-                html.attr('data-slide', i + 1);
+                html.data('slide', i + 1);
                 if (!i) html.addClass(self.options.active_class);
             });
 
@@ -120,14 +124,26 @@
             if (typeof direction == 'undefined') var direction = 0;
             var i = (position) ? position : self.main.$el.data('current-slide') + direction;
 
-            var in_length = (i <= self.main.elems.$items.length && i >= 1) ? true : false;
+            var in_length = (i <= self.main.elems.$items.length && i >= 1);
 
             if (in_length) {
+
+                // Set current slide
                 self.main.$el.attr('data-current-slide', i).data('current-slide', i);
                 if (self.options.thumb) self.thumbs.$el.attr('data-current-slide', i).data('current-slide', i);
+
+                // Set active class
+                var $slides = $( self.main.elems.$items ).add(self.thumbs.elems.$items);
+                var $current = $( self.main.$el ).add(self.thumbs.$el).find('li[data-slide="' + i + '"]');
+                $slides.not($current).removeClass(self.options.active_class);
+                $current.addClass(self.options.active_class);
+
+                // Set pager
                 var $pag = self.$pager.find('.' + self.options.pager_class + ':nth-child(' + i +')');
                 self.$pager.find('.' + self.options.pager_class).not($pag).removeClass(self.options.active_class);
                 $pag.addClass(self.options.active_class);
+
+                // Set position
                 self.set_position(i, self.main);
                 self.set_position(i, self.thumbs, true)
             }
@@ -156,7 +172,12 @@
                 var val = _self.elems.$items.width() * offset;
             }
 
-            _self.$el.css({'transform': 'translate3d(-'+ val +'px, 0px, 0px)'});
+            // if transitions not supported use jquery animate (IE9)
+            if (transitionsSupported) {
+                _self.$el.css({'transform': 'translate3d(-'+ val +'px, 0px, 0px)'});
+            } else {
+                _self.$el.animate({'left': - val})
+            }
 
         },
 
@@ -168,6 +189,14 @@
 
             var _self = obj;
 
+            var $images = _self.elems.$items.find('img');
+
+            // Calc slider width according to number of items
+            var num = _self.elems.$items.length;
+            var multiplier = (is_thumbs) ? num / self.options.thumb_show : num;
+            slider_css.width = multiplier * 100 + 15 + '%';
+
+            // Set core css
             _self.$el.css(slider_css);
             _self.elems.$view.css(view_css);
             _self.elems.$items.css(items_css);
@@ -179,6 +208,49 @@
             self.set_width(_self, is_thumbs);
             self.set_height(_self, is_thumbs);
 
+            // Setup faux elements if preload on
+            if (preload) {
+
+                if (is_thumbs) {
+                    var faux_thumbs = self.options.thumb_show;
+                    // Add number of shown thumbs
+                    while(faux_thumbs--) {
+                        _self.elems.$items.eq(faux_thumbs).prepend('<span class="faux"></span>');
+                    }
+                } else {
+                    _self.elems.$items.eq(0).prepend('<span class="faux"></span>')
+                }
+
+                var faux = _self.elems.$wrap.find('.faux'),
+                    faux_length = faux.length,
+                    load_count = 0;
+
+                // Add number of shown thumbs
+                while(faux_length--) {
+                    // When each image loads...
+                    _self.elems.$items.eq(faux_length).imagesLoaded(function(instance){
+                        var images = instance.images[0];
+                        var $image = $(images.img);
+                        var $parent = $image.closest('li');
+
+                        // Set height of viewport on first image load
+                        load_count++;
+                        if (load_count == 1) {
+                            _self.elems.$view.css({'height': $image.height() });
+                        }
+
+                        // Remove traces of faux element
+                        $images.attr('style','');
+                        $parent.find('.faux').fadeOut(600, function(){
+                            $(this).remove();
+                        });
+                    });
+                }
+            } else {
+                self.set_height(_self, is_thumbs);
+            }
+
+
         },
 
         /* --------------------------------
@@ -188,12 +260,11 @@
             var self = this;
 
             var _self = obj,
-                view_w = _self.elems.$view.width(),
                 show = self.options.thumb_show,
                 gutter = self.options.thumb_gutter;
 
+            var view_w = _self.elems.$view.width();
             var width = (is_thumbs) ? (view_w - gutter * (show - 1) ) / show : view_w;
-
             _self.elems.$items.css({'width': width});
 
         },
@@ -208,6 +279,36 @@
 
             _self.elems.$view.css({'height': _self.elems.$items.height() });
 
+        },
+
+        /* --------------------------------
+         | Recalc Size
+         * ------------------------------*/
+        recalc_size: function(obj, is_thumbs) {
+            var self = this;
+
+            var _self = obj;
+            var position = _self.$el.data('current-slide');
+
+            self.set_width(_self, is_thumbs);
+            self.set_height(_self, is_thumbs);
+            self.set_position(position, _self, is_thumbs, true);
+        },
+
+        /* --------------------------------
+         | Get Image Size
+         * ------------------------------*/
+        get_image_size: function(img, callback) {
+             var $img = $(img);
+
+             var wait = setInterval(function() {
+                 var w = $img[0].naturalWidth,
+                     h = $img[0].naturalHeight;
+                 if (w && h) {
+                     clearInterval(wait);
+                     callback.apply(this, [w, h]);
+                 }
+             }, 30);
         },
 
         /* --------------------------------
@@ -238,6 +339,11 @@
                     self.change_state($(this).data('slide'));
                 });
             }
+
+            $(window).on('resize', function(){
+                self.recalc_size(self.main);
+                self.recalc_size(self.thumbs, true);
+            })
 
         }
 
