@@ -22,6 +22,7 @@
 
             preload = self.options.preload && $.fn.imagesLoaded;
             transitionsSupported = ('transition' in document.documentElement.style) || ('WebkitTransition' in document.documentElement.style);
+            load_count = 0;
 
             // Core CSS
             slider_css = {
@@ -58,8 +59,10 @@
             if (self.thumbs.$el) self.create_slider(true);
             if (self.options.pager) self.create_pager();
 
-            // Bind Events
-            self.bind();
+            // Bind events on surge slider is initliazed
+            $('body').on('surge-slider-init', function(){
+                self.bind();
+            });
 
         },
 
@@ -111,7 +114,6 @@
                 html.data('slide', i + 1);
                 if (!i) html.addClass(self.options.active_class);
             });
-
 
         },
 
@@ -204,12 +206,8 @@
             // Add optional gutter for thumbnails
             if (is_thumbs && self.options.thumb_gutter) _self.elems.$items.css({'margin-right': self.options.thumb_gutter});
 
-            // Set dynamic width & height
-            self.set_width(_self, is_thumbs);
-
             // Setup faux elements if preload on
             if (preload) {
-
                 if (is_thumbs) {
                     var faux_thumbs = self.options.thumb_show;
                     // Add number of shown thumbs
@@ -217,12 +215,11 @@
                         _self.elems.$items.eq(faux_thumbs).prepend('<span class="faux"></span>');
                     }
                 } else {
-                    _self.elems.$items.eq(0).prepend('<span class="faux"></span>')
+                    _self.elems.$items.eq(0).prepend('<span class="faux"></span>');
                 }
 
-                var faux = _self.elems.$wrap.find('.faux'),
-                    faux_length = faux.length,
-                    load_count = 0;
+                _self.elems.$faux = _self.elems.$wrap.find('.faux');
+                var faux_length = _self.elems.$faux.length;
 
                 // Add number of shown thumbs
                 while(faux_length--) {
@@ -234,9 +231,8 @@
 
                         // Set height of viewport on first image load
                         load_count++;
-                        if (load_count == 1) {
-                            _self.elems.$view.css({'height': _self.elems.$items.height() });
-                        }
+                        if (load_count == 1) self.set_height(_self, is_thumbs, true);
+                        if (load_count == self.options.thumb_show + 1) $('body').trigger('surge-slider-init');
 
                         // Remove traces of faux element
                         $images.attr('style','');
@@ -245,10 +241,11 @@
                         });
                     });
                 }
-            } else {
-                self.set_height(_self, is_thumbs);
+
             }
 
+            // Set dynamic width & height
+            self.set_width(_self, is_thumbs);
 
         },
 
@@ -266,17 +263,28 @@
             var width = (is_thumbs) ? (view_w - gutter * (show - 1) ) / show : view_w;
             _self.elems.$items.css({'width': width});
 
+            // Check for faux elements
+            if (self.options.preload && _self.elems.$faux) _self.elems.$faux.css({'width': width});
+
         },
 
         /* --------------------------------
          | Set Height
          * ------------------------------*/
-        set_height: function(obj, is_thumbs) {
+        set_height: function(obj, is_thumbs, init) {
             var self = this;
 
             var _self = obj;
 
-            _self.elems.$view.css({'height': _self.elems.$items.height() });
+            var height = _self.elems.$items.height();
+            var ratio = height / _self.elems.$items.width();
+            var partner = (is_thumbs) ? self.main : self.thumbs;
+            var partner_height = partner.elems.$items.width() * ratio;
+
+            if (height) { // never set height to 0
+                _self.elems.$view.add(_self.elems.$faux).css({'height': height});
+                if (init) partner.elems.$view.add(partner.elems.$faux).css({'height': partner_height });
+            }
 
         },
 
